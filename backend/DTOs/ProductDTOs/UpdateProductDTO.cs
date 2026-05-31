@@ -14,7 +14,6 @@ namespace backend.DTOs.ProductDTOs
         public string Name { get; set; } = string.Empty;
         [Required(ErrorMessage = "Поле з описом повинно бути заповненим.")]
         public string Description { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Прикріпіть зображення.")]
         public IFormFile Image { get; set; }
         public List<ProductVariantDTO> Variants { get; set; } = new List<ProductVariantDTO>();
         public List<CommentDTO> Comments { get; set; } = new List<CommentDTO>();

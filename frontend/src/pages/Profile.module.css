@@ -1,0 +1,427 @@
+.page {
+  min-height: 100vh;
+  padding-top: 80px;
+  background: var(--parchment);
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 32px 80px;
+}
+
+/* Profile header */
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 40px;
+  padding: 28px;
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid var(--cream-dark);
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--green-deep);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--green-deep);
+  line-height: 1.2;
+}
+
+.email {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.logoutBtn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.logoutBtn:hover {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--cream-dark);
+  margin-bottom: 36px;
+}
+
+.tab {
+  padding: 14px 28px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-light);
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.3px;
+}
+
+.tab:hover { color: var(--green-deep); }
+
+.tabActive {
+  color: var(--green-deep);
+  border-bottom-color: var(--green-deep);
+  font-weight: 500;
+}
+
+.tabBadge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green-deep);
+  color: var(--cream);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Personal tab */
+.personalTab { display: flex; flex-direction: column; gap: 32px; }
+
+.infoCard {
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--green-deep);
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.infoField { display: flex; flex-direction: column; gap: 4px; }
+
+.infoLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.infoValue {
+  font-size: 15px;
+  color: var(--text-dark);
+  padding: 10px 14px;
+  background: var(--parchment);
+  border-radius: 6px;
+  border: 1px solid var(--cream-dark);
+}
+
+.infoNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-light);
+  padding: 12px 14px;
+  background: var(--cream);
+  border-radius: 6px;
+}
+
+/* Quick links */
+.quickLinks { display: flex; flex-direction: column; gap: 16px; }
+
+.quickTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-mid);
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.quickCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-mid);
+  transition: all var(--transition);
+}
+
+.quickCard:hover {
+  border-color: var(--green-deep);
+  color: var(--green-deep);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-2px);
+}
+
+.quickCard svg { color: var(--green-pale); transition: color var(--transition); }
+.quickCard:hover svg { color: var(--green-deep); }
+
+/* Orders tab */
+.ordersTab { min-height: 300px; }
+
+.emptyOrders {
+  text-align: center;
+  padding: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.emptyOrdersIcon { font-size: 56px; }
+
+.emptyOrders h3 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text-mid);
+}
+
+.emptyOrders p { font-size: 14px; color: var(--text-light); }
+
+.catalogBtn {
+  padding: 14px 32px;
+  background: var(--green-deep);
+  color: var(--cream);
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--transition);
+  margin-top: 8px;
+}
+
+.catalogBtn:hover { background: var(--green-mid); }
+
+.ordersList { display: flex; flex-direction: column; gap: 12px; }
+
+.orderCard {
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+
+.orderCard:hover { box-shadow: var(--shadow-soft); }
+
+.orderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  cursor: pointer;
+  user-select: none;
+  gap: 16px;
+}
+
+.orderHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orderId {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.orderDate {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.orderHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.orderStatus {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.orderTotal {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--green-deep);
+  white-space: nowrap;
+}
+
+.orderChevron {
+  color: var(--text-light);
+  transition: transform var(--transition);
+}
+
+.chevronOpen { transform: rotate(180deg); }
+
+.orderBody {
+  border-top: 1px solid var(--cream-dark);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.orderItems { display: flex; flex-direction: column; gap: 8px; }
+
+.orderItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cream);
+}
+
+.orderItem:last-child { border-bottom: none; }
+
+.orderItemInfo { display: flex; align-items: center; gap: 12px; }
+
+.orderItemQty {
+  width: 28px;
+  height: 28px;
+  background: var(--cream);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  flex-shrink: 0;
+}
+
+.orderItemName { font-size: 14px; color: var(--text-mid); }
+
+.orderItemPrice {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.contactInfo {
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contactLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-light);
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 24px;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.contactIcon {
+  color: var(--green-deep);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+@media (max-width: 600px) {
+  .contactGrid { grid-template-columns: 1fr; }
+}
+
+.orderFooter {
+  border-top: 1px solid var(--cream-dark);
+  padding-top: 16px;
+}
+
+.orderTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-dark);
+}
+
+.orderTotalValue {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--green-deep);
+}

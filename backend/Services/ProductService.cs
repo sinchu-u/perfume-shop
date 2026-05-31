@@ -6,7 +6,6 @@ using backend.DTOs.ProductDTOs;
 using backend.Helpers;
 using backend.Interfaces;
 using backend.Mappers;
-using backend.Models;
 using backend.Repositories.Interfaces;
 using backend.Services.Interfaces;
 
@@ -98,7 +97,18 @@ namespace backend.Services
 
         public async Task<ProductDTO?> UpdateAsync(int id, UpdateProductDTO productDTO)
         {
-            var relativeImageUrl = await SaveImage(productDTO.Image);
+            var existing = await _productRepository.GetByIdAsync(id);
+            if (existing == null)
+            {
+                throw new KeyNotFoundException("Не вдалося оновити позицію: товар не знайдено.");
+            }
+
+            string relativeImageUrl = existing.Image;
+
+            if (productDTO.Image != null && productDTO.Image.Length > 0)
+            {
+                relativeImageUrl = await SaveImage(productDTO.Image);
+            }
 
             var brand = await _brandRepository.GetByIdAsync(productDTO.BrandId);
             if (brand == null)
@@ -128,7 +138,10 @@ namespace backend.Services
         {
             var extension = Path.GetExtension(image.FileName);
             var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+
+            string webRootPath = _webHostEnvironment.WebRootPath ?? Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
+
+            var uploadsFolder = Path.Combine(webRootPath, "images", "products");
 
             if (!Directory.Exists(uploadsFolder))
             {

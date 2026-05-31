@@ -16,7 +16,12 @@ namespace backend.Mappers
                 Id = order.Id,
                 TotalPrice = order.TotalPrice,
                 CreatedAt = order.CreatedAt,
-                ContactInfo = order.ContactInfo,
+                Name = order.Name,
+                Surname = order.Surname,
+                Patronimic = order.Patronimic,
+                PhoneNumber = order.PhoneNumber,
+                Email = order.Email,
+                Address = order.Address,
                 Status = order.Status,
                 Items = order.Items.Select(i => i.ToOrderItemDTO()).ToList()
             };
@@ -26,7 +31,12 @@ namespace backend.Mappers
             return new Order
             {
                 UserId = userId,
-                ContactInfo = orderDTO.ContactInfo,
+                Name = orderDTO.Name,
+                Surname = orderDTO.Surname,
+                Patronimic = orderDTO.Patronimic,
+                PhoneNumber = orderDTO.PhoneNumber,
+                Email = orderDTO.Email,
+                Address = orderDTO.Address,
                 Items = cart.Items.Select(i => i.ToOrderItemFromCreate()).ToList()
             };
         }

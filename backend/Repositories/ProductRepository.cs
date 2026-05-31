@@ -26,7 +26,7 @@ namespace backend.Repositories
             var product = await GetByIdAsync(id);
             if (product == null) return null;
 
-            _context.Products.Remove(product);
+            product.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             return product;
@@ -34,7 +34,7 @@ namespace backend.Repositories
 
         public async Task<PagedResult<Product>> GetAllAsync(ProductQueryObject query)
         {
-            var productsQuery = _context.Products.Include(x => x.Comments).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().AsQueryable();
+            var productsQuery = _context.Products.Where(x => !x.IsDeleted).Include(x => x.Comments).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().AsQueryable();
             productsQuery = productsQuery.OrderByDescending(x => x.Variants.Any(v => v.Stock > 0));
 
             if (!string.IsNullOrWhiteSpace(query.Search))
@@ -46,10 +46,21 @@ namespace backend.Repositories
             {
                 productsQuery = productsQuery.Where(x => x.Brand != null && x.Brand.Name.ToLower() == query.Brand.ToLower());
             }
+            
+            if (!string.IsNullOrWhiteSpace(query.ScentType))
+            {
+                productsQuery = productsQuery.Where(x => x.ScentType != null && x.ScentType.Name.ToLower() == query.ScentType.ToLower());
+            }
 
             if (!string.IsNullOrWhiteSpace(query.Category))
             {
                 productsQuery = productsQuery.Where(x => x.Category != null && x.Category.Name.ToLower() == query.Category.ToLower());
+            }
+
+            if (query.Volumes != null && query.Volumes.Count > 0)
+            {
+                productsQuery = productsQuery
+                    .Where(x => x.Variants.Any(v => query.Volumes.Contains(v.VolumeMl)));
             }
 
             if (!string.IsNullOrWhiteSpace(query.SortBy))
@@ -85,7 +96,7 @@ namespace backend.Repositories
 
         public async Task<Product?> GetByIdAsync(int id)
         {
-            return await _context.Products.Include(x => x.Comments).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().FirstOrDefaultAsync(i => i.Id == id);
+            return await _context.Products.Where(x => !x.IsDeleted).Include(x => x.Comments).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<Product?> UpdateAsync(int id, Product product)
@@ -93,14 +104,19 @@ namespace backend.Repositories
             var updatedProduct = await GetByIdAsync(id);
             if (updatedProduct == null) return null;
 
-            _context.Entry(updatedProduct).CurrentValues.SetValues(product);
+            updatedProduct.Name = product.Name;
+            updatedProduct.Description = product.Description;
+            updatedProduct.Image = product.Image;
+            updatedProduct.BrandId = product.BrandId;
+            updatedProduct.CategoryId = product.CategoryId;
+            updatedProduct.ScentTypeId = product.ScentTypeId;
 
             await _context.SaveChangesAsync();
             return updatedProduct;
         }
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _context.Products.AnyAsync(p => p.Id == id);
+            return await _context.Products.AnyAsync(p => p.Id == id && !p.IsDeleted);
         }
     }
 }

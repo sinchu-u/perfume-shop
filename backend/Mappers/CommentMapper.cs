@@ -15,6 +15,7 @@ namespace backend.Mappers
             {
                 Id = comment.Id,
                 ProductId = comment.ProductId,
+                UserId = comment.UserId,
                 Rating = comment.Rating,
                 Text = comment.Text,
                 CreatedAt = comment.CreatedAt

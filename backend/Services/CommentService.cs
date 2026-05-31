@@ -91,7 +91,10 @@ namespace backend.Services
                 throw new UnauthorizedAccessException("Ви не можете редагувати чужий коментар.");
             }
 
-            var updatedComment = await _commentRepository.UpdateAsync(id, commentDTO.ToCommentFromUpdate());
+            comment.Rating = commentDTO.Rating;
+            comment.Text = commentDTO.Text;
+
+            var updatedComment = await _commentRepository.UpdateAsync(id, comment);
 
             return updatedComment?.ToCommentDTO();
         }

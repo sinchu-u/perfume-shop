@@ -62,7 +62,8 @@ namespace backend.Repositories
             var updatedComment = await GetByIdAsync(id);
             if (updatedComment == null) return null;
 
-            _context.Entry(updatedComment).CurrentValues.SetValues(comment);
+            updatedComment.Rating = comment.Rating;
+            updatedComment.Text = comment.Text;
 
             await _context.SaveChangesAsync();
             return updatedComment;
