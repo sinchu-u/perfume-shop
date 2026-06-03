@@ -125,7 +125,7 @@ const Admin = () => {
   const [productForm, setProductForm] = useState({ name: '', description: '', brandId: '', categoryId: '', scentTypeId: '', image: null });
   const [variants, setVariants] = useState([{ volumeMl: '', stock: '', price: '' }]);
   const [savingProduct, setSavingProduct] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [entityDeleteConfirm, setEntityDeleteConfirm] = useState(null);
   const imgRef = useRef();
 
   // Filters
@@ -276,20 +276,42 @@ const Admin = () => {
   const removeVariantRow = (i) => setVariants(prev => prev.filter((_, idx) => idx !== i));
 
   // Filter CRUD helpers
+  const confirmEntityDelete = (type, id, name, handler) => {
+    setEntityDeleteConfirm({ type, id, name, handler });
+  };
+
   const brandHandlers = {
     onCreate: async (name) => { await createBrand({ name }); loadFilters(); addToast('Бренд додано'); },
     onUpdate: async (id, name) => { await updateBrand(id, { name }); loadFilters(); addToast('Оновлено'); },
-    onDelete: async (id) => { try { await deleteBrand(id); loadFilters(); addToast('Видалено'); } catch { addToast('Не можна видалити: прив\'язано до товарів', 'error'); } },
+    onDelete: (id) => {
+      const item = brands.find(b => b.id === id);
+      confirmEntityDelete('бренд', id, item?.name, async () => {
+        try { await deleteBrand(id); loadFilters(); addToast('Видалено'); }
+        catch (err) { addToast(err.response?.data?.title || 'Не можна видалити: прив\'язано до товарів', 'error'); }
+      });
+    },
   };
   const catHandlers = {
     onCreate: async (name) => { await createCategory({ name }); loadFilters(); addToast('Стать додано'); },
     onUpdate: async (id, name) => { await updateCategory(id, { name }); loadFilters(); addToast('Оновлено'); },
-    onDelete: async (id) => { try { await deleteCategory(id); loadFilters(); addToast('Видалено'); } catch { addToast('Не можна видалити: прив\'язано до товарів', 'error'); } },
+    onDelete: (id) => {
+      const item = categories.find(c => c.id === id);
+      confirmEntityDelete('категорію', id, item?.name, async () => {
+        try { await deleteCategory(id); loadFilters(); addToast('Видалено'); }
+        catch (err) { addToast(err.response?.data?.title || 'Не можна видалити: прив\'язано до товарів', 'error'); }
+      });
+    },
   };
   const scentHandlers = {
     onCreate: async (name) => { await createScentType({ name }); loadFilters(); addToast('Тип додано'); },
     onUpdate: async (id, name) => { await updateScentType(id, { name }); loadFilters(); addToast('Оновлено'); },
-    onDelete: async (id) => { try { await deleteScentType(id); loadFilters(); addToast('Видалено'); } catch { addToast('Не можна видалити: прив\'язано до товарів', 'error'); } },
+    onDelete: (id) => {
+      const item = scentTypes.find(s => s.id === id);
+      confirmEntityDelete('тип запаху', id, item?.name, async () => {
+        try { await deleteScentType(id); loadFilters(); addToast('Видалено'); }
+        catch (err) { addToast(err.response?.data?.title || 'Не можна видалити: прив\'язано до товарів', 'error'); }
+      });
+    },
   };
 
   // Orders
@@ -584,15 +606,15 @@ const Admin = () => {
         </Modal>
       )}
 
-      {/* ─── Delete Confirm ─── */}
-      {deleteConfirm && (
-        <Modal title="Підтвердження видалення" onClose={() => setDeleteConfirm(null)}>
+      {/* ─── Entity Delete Confirm ─── */}
+      {entityDeleteConfirm && (
+        <Modal title="Підтвердження видалення" onClose={() => setEntityDeleteConfirm(null)}>
           <div className={styles.deleteConfirm}>
-            <p>Ви впевнені, що хочете видалити <strong>{deleteConfirm.name}</strong>?</p>
-            <p className={styles.deleteWarning}>Ця дія незворотна. Всі об'єми та відгуки також будуть видалені.</p>
+            <p>Ви впевнені, що хочете видалити {entityDeleteConfirm.type} <strong>«{entityDeleteConfirm.name}»</strong>?</p>
+            <p className={styles.deleteWarning}>Видалення неможливе, якщо до цього елементу прив'язані активні товари.</p>
             <div className={styles.deleteActions}>
-              <button className={styles.cancelFormBtn} onClick={() => setDeleteConfirm(null)}>Скасувати</button>
-              <button className={styles.deleteFinalBtn} onClick={() => handleDeleteProduct(deleteConfirm.id)}>
+              <button className={styles.cancelFormBtn} onClick={() => setEntityDeleteConfirm(null)}>Скасувати</button>
+              <button className={styles.deleteFinalBtn} onClick={async () => { await entityDeleteConfirm.handler(); setEntityDeleteConfirm(null); }}>
                 Так, видалити
               </button>
             </div>

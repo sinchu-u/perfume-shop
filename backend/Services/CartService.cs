@@ -26,6 +26,14 @@ namespace backend.Services
             var cart = await _cartRepository.GetCartAsync(userId);
             if (cart == null) cart = await _cartRepository.CreateCartAsync(userId);
 
+            var outOfStockItems = cart.Items.Where(i => i.ProductVariant == null || i.ProductVariant.Stock == 0).ToList();
+
+            foreach (var item in outOfStockItems)
+            {
+                await _cartRepository.DeleteItemAsync(item);
+                cart.Items.Remove(item);
+            }
+
             return cart.ToCartDTO();
         }
 

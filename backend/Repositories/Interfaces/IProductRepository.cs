@@ -16,5 +16,8 @@ namespace backend.Repositories.Interfaces
         Task<Product?> GetByIdAsync(int id);
         Task<PagedResult<Product>> GetAllAsync(ProductQueryObject query);
         Task<bool> ExistsAsync(int id);
+        Task<bool> HasProductsWithBrandAsync(int brandId);
+        Task<bool> HasProductsWithCategoryAsync(int categoryId);
+        Task<bool> HasProductsWithScentTypeAsync(int scentTypeId);
     }
 }

@@ -11,23 +11,31 @@ namespace backend.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly ICategoryRepository _repository;
-        public CategoryService(ICategoryRepository repository)
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductRepository _productRepository;
+        public CategoryService(ICategoryRepository categoryRepository, IProductRepository productRepository)
         {
-            _repository = repository;
+            _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
         }
 
         public async Task<CategoryDTO> CreateAsync(CreateCategoryDTO categoryDTO)
         {
             var category = categoryDTO.ToCategoryFromCreate();
-            await _repository.CreateAsync(category);
+            await _categoryRepository.CreateAsync(category);
 
             return category.ToCategoryDTO();
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var category = await _repository.DeleteAsync(id);
+            var hasProducts = await _productRepository.HasProductsWithCategoryAsync(id);
+            if (hasProducts)
+            {
+                throw new InvalidOperationException("Не вдалося видалити категорію: до неї прив'язані товари.");
+            }
+
+            var category = await _categoryRepository.DeleteAsync(id);
             if (category == null)
             {
                 throw new KeyNotFoundException("Не вдалося видалити категорію: категорію не знайдено.");
@@ -37,13 +45,13 @@ namespace backend.Services
 
         public async Task<IEnumerable<CategoryDTO>> GetAllAsync()
         {
-            var categories = await _repository.GetAllAsync();
+            var categories = await _categoryRepository.GetAllAsync();
             return categories.Select(x => x.ToCategoryDTO());
         }
 
         public async Task<CategoryDTO?> GetByIdAsync(int id)
         {
-            var category = await _repository.GetByIdAsync(id);
+            var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
             {
                 throw new KeyNotFoundException($"Категорію з ID {id} не знайдено.");
@@ -54,7 +62,7 @@ namespace backend.Services
 
         public async Task<CategoryDTO?> UpdateAsync(int id, UpdateCategoryDTO categoryDTO)
         {
-            var category = await _repository.UpdateAsync(id, categoryDTO.ToCategoryFromUpdate(id));
+            var category = await _categoryRepository.UpdateAsync(id, categoryDTO.ToCategoryFromUpdate(id));
             if (category == null)
             {
                 throw new KeyNotFoundException("Не вдалося оновити категорію: категорію не знайдено.");

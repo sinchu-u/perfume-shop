@@ -11,21 +11,29 @@ namespace backend.Services
 {
     public class ScentTypeService : IScentTypeService
     {
-        private readonly IScentTypeRepository _repository;
-        public ScentTypeService(IScentTypeRepository repository)
+        private readonly IScentTypeRepository _scentRepository;
+        private readonly IProductRepository _productRepository;
+        public ScentTypeService(IScentTypeRepository scentRepository, IProductRepository productRepository)
         {
-            _repository = repository;
+            _scentRepository = scentRepository;
+            _productRepository = productRepository;
         }
         public async Task<ScentTypeDTO> CreateAsync(CreateScentTypeDTO scentDTO)
         {
             var scent = scentDTO.ToScentTypeFromCreate();
-            await _repository.CreateAsync(scent);
+            await _scentRepository.CreateAsync(scent);
 
             return scent.ToScentTypeDTO();
         }
         public async Task<bool> DeleteAsync(int id)
         {
-            var scent = await _repository.DeleteAsync(id);
+            var hasProducts = await _productRepository.HasProductsWithScentTypeAsync(id);
+            if (hasProducts)
+            {
+                throw new InvalidOperationException("Не вдалося видалити тип запаху: до нього прив'язані товари.");
+            }
+            
+            var scent = await _scentRepository.DeleteAsync(id);
             if (scent == null)
             {
                 throw new KeyNotFoundException("Не вдалося видалити тип запаху: тип не знайдено.");
@@ -35,13 +43,13 @@ namespace backend.Services
 
         public async Task<IEnumerable<ScentTypeDTO>> GetAllAsync()
         {
-            var scents = await _repository.GetAllAsync();
+            var scents = await _scentRepository.GetAllAsync();
             return scents.Select(x => x.ToScentTypeDTO());
         }
 
         public async Task<ScentTypeDTO?> GetByIdAsync(int id)
         {
-            var scent = await _repository.GetByIdAsync(id);
+            var scent = await _scentRepository.GetByIdAsync(id);
             if (scent == null)
             {
                 throw new KeyNotFoundException($"Категорію з ID {id} не знайдено.");
@@ -52,7 +60,7 @@ namespace backend.Services
 
         public async Task<ScentTypeDTO?> UpdateAsync(int id, UpdateScentTypeDTO scentDTO)
         {
-            var scent = await _repository.UpdateAsync(id, scentDTO.ToScentTypeFromUpdate(id));
+            var scent = await _scentRepository.UpdateAsync(id, scentDTO.ToScentTypeFromUpdate(id));
             if (scent == null)
             {
                 throw new KeyNotFoundException("Не вдалося оновити тип запаху: тип не знайдено.");

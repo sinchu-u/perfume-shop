@@ -67,9 +67,12 @@ namespace backend.Repositories
             {
                 if (query.SortBy.Equals("Price", StringComparison.OrdinalIgnoreCase))
                 {
-                    productsQuery = query.IsDescending 
-                        ? productsQuery.OrderByDescending(x => x.Variants.Any() ? x.Variants.Min(v => v.Price) : 0)
-                        : productsQuery.OrderBy(x => x.Variants.Any() ? x.Variants.Min(v => v.Price) : 0);
+                    productsQuery = query.IsDescending ? productsQuery.OrderByDescending(x => x.Variants.Any(v => v.Stock > 0)
+                        ? x.Variants.Where(v => v.Stock > 0).Min(v => v.Price)
+                        : x.Variants.Any() ? x.Variants.Min(v => v.Price) : 0)
+                        : productsQuery.OrderBy(x => x.Variants.Any(v => v.Stock > 0)
+                        ? x.Variants.Where(v => v.Stock > 0).Min(v => v.Price)
+                        : x.Variants.Any() ? x.Variants.Min(v => v.Price) : 0);
                 }
                 else if (query.SortBy.Equals("Rating", StringComparison.OrdinalIgnoreCase))
                 {
@@ -117,6 +120,18 @@ namespace backend.Repositories
         public async Task<bool> ExistsAsync(int id)
         {
             return await _context.Products.AnyAsync(p => p.Id == id && !p.IsDeleted);
+        }
+        public async Task<bool> HasProductsWithBrandAsync(int brandId)
+        {
+            return await _context.Products.AnyAsync(p => p.BrandId == brandId && !p.IsDeleted);
+        }
+        public async Task<bool> HasProductsWithCategoryAsync(int categoryId)
+        {
+            return await _context.Products.AnyAsync(p => p.CategoryId == categoryId && !p.IsDeleted);
+        }
+        public async Task<bool> HasProductsWithScentTypeAsync(int scentTypeId)
+        {
+            return await _context.Products.AnyAsync(p => p.ScentTypeId == scentTypeId && !p.IsDeleted);
         }
     }
 }
