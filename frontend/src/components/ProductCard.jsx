@@ -14,11 +14,16 @@ const ProductCard = ({ product }) => {
   const { getBrandName } = useFilters();
   const [adding, setAdding] = useState(false);
 
-  const minVariant = product.variants?.length > 0
-    ? product.variants.reduce((min, v) => v.price < min.price ? v : min, product.variants[0])
+  // За замовчуванням обираємо варіант з мінімальним об'ємом серед наявних.
+  // Якщо всі закінчились — беремо варіант з мінімальним об'ємом (для відображення).
+  const sortedVariants = [...(product.variants ?? [])].sort((a, b) => a.volumeMl - b.volumeMl);
+  const defaultVariant = sortedVariants.length > 0
+    ? (sortedVariants.find(v => v.stock > 0) ?? sortedVariants[0])
     : null;
 
-  const inStock = product.variants?.some(v => v.stock > 0);
+  const [selectedVariant, setSelectedVariant] = useState(defaultVariant);
+
+  const inStock = selectedVariant?.stock > 0;
   const avgRating = product.comments?.length > 0
     ? product.comments.reduce((acc, c) => acc + c.rating, 0) / product.comments.length
     : 0;
@@ -33,15 +38,23 @@ const ProductCard = ({ product }) => {
       addToast('Увійдіть, щоб додати товар до кошика', 'error');
       return;
     }
-    if (!minVariant || !inStock) return;
+    if (!selectedVariant || !inStock) return;
     try {
       setAdding(true);
-      await addItem(minVariant.id, 1);
-      addToast(`${product.name} додано до кошика`);
+      await addItem(selectedVariant.id, 1);
+      addToast(`${product.name} (${selectedVariant.volumeMl} мл) додано до кошика`);
     } catch (err) {
       addToast(err.response?.data?.title || 'Помилка при додаванні', 'error');
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleVariantClick = (e, variant) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (variant.stock > 0) {
+      setSelectedVariant(variant);
     }
   };
 
@@ -82,9 +95,31 @@ const ProductCard = ({ product }) => {
           )}
         </div>
         <h3 className={styles.name}>{product.name}</h3>
+
+        {/* Баг 2: Відображення всіх доступних об'ємів */}
+        {sortedVariants.length > 0 && (
+          <div className={styles.volumePills}>
+            {sortedVariants.map(v => (
+              <button
+                key={v.id}
+                className={[
+                  styles.volumePill,
+                  selectedVariant?.id === v.id ? styles.volumePillActive : '',
+                  v.stock === 0 ? styles.volumePillOut : '',
+                ].filter(Boolean).join(' ')}
+                onClick={(e) => handleVariantClick(e, v)}
+                title={v.stock === 0 ? 'Немає в наявності' : `${v.volumeMl} мл`}
+              >
+                {v.volumeMl}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className={styles.footer}>
-          {minVariant ? (
-            <span className={styles.price}>{formatPrice(minVariant.price)}</span>
+          {/* Баг 1: Ціна оновлюється разом із вибраним варіантом */}
+          {selectedVariant ? (
+            <span className={styles.price}>{formatPrice(selectedVariant.price)}</span>
           ) : (
             <span className={styles.noPrice}>—</span>
           )}

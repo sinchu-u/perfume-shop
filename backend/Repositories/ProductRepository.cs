@@ -34,7 +34,7 @@ namespace backend.Repositories
 
         public async Task<PagedResult<Product>> GetAllAsync(ProductQueryObject query)
         {
-            var productsQuery = _context.Products.Where(x => !x.IsDeleted).Include(x => x.Comments).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().AsQueryable();
+            var productsQuery = _context.Products.Where(x => !x.IsDeleted).Include(x => x.Comments).ThenInclude(c => c.User).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().AsQueryable();
             productsQuery = productsQuery.OrderByDescending(x => x.Variants.Any(v => v.Stock > 0));
 
             if (!string.IsNullOrWhiteSpace(query.Search))
@@ -96,7 +96,7 @@ namespace backend.Repositories
 
         public async Task<Product?> GetByIdAsync(int id)
         {
-            return await _context.Products.Where(x => !x.IsDeleted).Include(x => x.Comments).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().FirstOrDefaultAsync(i => i.Id == id);
+            return await _context.Products.Where(x => !x.IsDeleted).Include(x => x.Comments).ThenInclude(c => c.User).Include(x => x.Variants).Include(x => x.Brand).Include(x => x.Category).Include(x => x.ScentType).AsSplitQuery().FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<Product?> UpdateAsync(int id, Product product)

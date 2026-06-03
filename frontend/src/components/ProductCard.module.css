@@ -141,6 +141,44 @@
   overflow: hidden;
 }
 
+/* Баг 2: Пігулки об'ємів */
+.volumePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.volumePill {
+  padding: 3px 8px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all var(--transition);
+  line-height: 1.4;
+}
+
+.volumePill:hover:not(.volumePillOut) {
+  border-color: var(--green-deep);
+  color: var(--green-deep);
+}
+
+.volumePillActive {
+  border-color: var(--green-deep);
+  background: var(--green-deep);
+  color: var(--cream);
+}
+
+.volumePillOut {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
 .footer {
   display: flex;
   align-items: center;

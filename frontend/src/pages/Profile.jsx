@@ -15,7 +15,6 @@ const Profile = () => {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [expanded, setExpanded] = useState(null);
-  // variantId → product map
   const [productsMap, setProductsMap] = useState({});
 
   useEffect(() => {
@@ -29,7 +28,6 @@ const Profile = () => {
         .then(r => {
           const fetchedOrders = r.data || [];
           setOrders(fetchedOrders);
-          // Also load products map
           return getProducts({ pageSize: 200, pageNumber: 1 });
         })
         .then(res => {
@@ -48,16 +46,17 @@ const Profile = () => {
 
   const toggleOrder = (id) => setExpanded(prev => prev === id ? null : id);
 
+  // Баг 3: Перша літера імені користувача для аватарки
+  const avatarLetter = user.userName?.[0]?.toUpperCase() || 'U';
+
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         {/* Profile header */}
         <div className={styles.profileHeader}>
+          {/* Баг 3: Аватарка показує першу літеру імені замість SVG */}
           <div className={styles.avatar}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-            </svg>
+            <span className={styles.avatarLetter}>{avatarLetter}</span>
           </div>
           <div>
             <h1 className={styles.name}>{user.userName}</h1>

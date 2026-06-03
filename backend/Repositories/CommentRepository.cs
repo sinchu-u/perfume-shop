@@ -34,7 +34,7 @@ namespace backend.Repositories
 
         public async Task<PagedResult<Comment>> GetAllAsync(CommentQueryObject query)
         {
-            var commentsQuery = _context.Comments.OrderByDescending(c => c.Id).AsQueryable();
+            var commentsQuery = _context.Comments.Include(c => c.User).OrderByDescending(c => c.Id).AsQueryable();
 
             var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
             var pageSize = query.PageSize < 1 ? 10 : query.PageSize;
@@ -54,7 +54,7 @@ namespace backend.Repositories
 
         public async Task<Comment?> GetByIdAsync(int id)
         {
-            return await _context.Comments.FindAsync(id);
+            return await _context.Comments.Include(c => c.User).FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<Comment?> UpdateAsync(int id, Comment comment)

@@ -32,7 +32,9 @@ namespace backend.Services
             comment.UserId = userId;
 
             await _commentRepository.CreateAsync(comment);
-            return comment.ToCommentDTO();
+            var createdComment = await _commentRepository.GetByIdAsync(comment.Id);
+
+            return createdComment.ToCommentDTO();
         }
 
         public async Task<bool> DeleteAsync(int id, string userId)

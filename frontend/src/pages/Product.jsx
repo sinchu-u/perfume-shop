@@ -32,6 +32,16 @@ const StarDisplay = ({ rating }) => (
 
 const COMMENTS_PER_PAGE = 5;
 
+// Баг 3: Хелпер для отримання першої літери імені користувача
+const getAvatarLetter = (comment) => {
+  // Спочатку пробуємо userName (якщо бекенд його повертає)
+  if (comment.userName && comment.userName.length > 0) {
+    return comment.userName[0].toUpperCase();
+  }
+  // Запасний варіант — літера 'А' (анонім)
+  return 'А';
+};
+
 const Product = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -44,7 +54,6 @@ const Product = () => {
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [sticky, setSticky] = useState(false);
   const heroRef = useRef(null);
 
   // Comments
@@ -68,8 +77,9 @@ const Product = () => {
         const res = await getProductById(id);
         setProduct(res.data);
         if (res.data.variants?.length > 0) {
-          const inStock = res.data.variants.find(v => v.stock > 0);
-          setSelectedVariant(inStock || res.data.variants[0]);
+          // Баг 1 & 2: За замовчуванням обираємо перший варіант, що є в наявності
+          const inStockVariant = res.data.variants.find(v => v.stock > 0);
+          setSelectedVariant(inStockVariant || res.data.variants[0]);
         }
       } catch {
         addToast('Товар не знайдено', 'error');
@@ -86,7 +96,6 @@ const Product = () => {
     const fetchComments = async () => {
       setCommentLoading(true);
       try {
-        // Filter comments for this product from product.comments
         const all = product.comments || [];
         setCommentTotal(all.length);
         const start = (commentPage - 1) * COMMENTS_PER_PAGE;
@@ -97,17 +106,6 @@ const Product = () => {
     };
     fetchComments();
   }, [product, commentPage]);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect();
-        setSticky(rect.bottom < 80);
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   const handleAddToCart = async () => {
     if (!user) { addToast('Увійдіть, щоб додати товар', 'error'); return; }
@@ -132,7 +130,6 @@ const Product = () => {
       addToast('Відгук додано!');
       setNewText('');
       setNewRating(5);
-      // Refresh product
       const res = await getProductById(id);
       setProduct(res.data);
     } catch (err) {
@@ -202,6 +199,7 @@ const Product = () => {
     : 0;
 
   const imageUrl = getImageUrl(product.image);
+  // Баг 1: inStock перевіряємо для вибраного варіанту
   const inStock = selectedVariant?.stock > 0;
   const commentPages = Math.ceil(commentTotal / COMMENTS_PER_PAGE);
 
@@ -261,7 +259,7 @@ const Product = () => {
               </div>
             </div>
 
-            {/* Variants */}
+            {/* Варіанти об'єму */}
             {product.variants?.length > 0 && (
               <div className={styles.variantsBlock}>
                 <p className={styles.variantLabel}>Об'єм</p>
@@ -270,7 +268,10 @@ const Product = () => {
                     <button
                       key={v.id}
                       className={`${styles.variantBtn} ${selectedVariant?.id === v.id ? styles.variantActive : ''} ${v.stock === 0 ? styles.variantOut : ''}`}
-                      onClick={() => setSelectedVariant(v)}
+                      onClick={() => {
+                        // Баг 1 & 2: дозволяємо вибирати лише доступні варіанти
+                        if (v.stock > 0) setSelectedVariant(v);
+                      }}
                     >
                       {v.volumeMl} мл
                       {v.stock === 0 && <span className={styles.variantOutBadge}>×</span>}
@@ -280,7 +281,7 @@ const Product = () => {
               </div>
             )}
 
-            {/* Price & Stock */}
+            {/* Баг 1: Ціна оновлюється з вибраним варіантом */}
             <div className={styles.priceBlock}>
               {selectedVariant ? (
                 <span className={styles.price}>{formatPrice(selectedVariant.price)}</span>
@@ -306,7 +307,7 @@ const Product = () => {
         </div>
       </div>
 
-      {/* STICKY SECTION (description + comments LEFT, mini-card RIGHT) */}
+      {/* STICKY SECTION */}
       <div className={`${styles.container} ${styles.body}`}>
         <div className={styles.bodyLeft}>
           {/* Description */}
@@ -363,71 +364,74 @@ const Product = () => {
               <div className={styles.commentList}>
                 {comments.map(c => {
                   const isOwner = user != null && String(c.userId) === String(user.id);
+                  // Баг 3: Отримуємо першу літеру імені користувача
+                  const avatarLetter = getAvatarLetter(c);
                   return (
-                  <div key={c.id} className={styles.commentItem}>
-                    {editingId === c.id ? (
-                      // --- Edit mode ---
-                      <div className={styles.editForm}>
-                        <StarPicker value={editRating} onChange={setEditRating} />
-                        <textarea
-                          value={editText}
-                          onChange={e => setEditText(e.target.value)}
-                          className={styles.reviewTextarea}
-                          maxLength={300}
-                          rows={3}
-                        />
-                        <div className={styles.reviewFormFooter}>
-                          <span className={styles.charCount}>{editText.length}/300</span>
-                          <div className={styles.editActions}>
-                            <button
-                              type="button"
-                              className={styles.cancelEditBtn}
-                              onClick={handleCancelEdit}
-                              disabled={editSubmitting}
-                            >Скасувати</button>
-                            <button
-                              type="button"
-                              className={styles.reviewSubmitBtn}
-                              onClick={() => handleSaveEdit(c.id)}
-                              disabled={editSubmitting}
-                            >{editSubmitting ? 'Збереження...' : 'Зберегти'}</button>
+                    <div key={c.id} className={styles.commentItem}>
+                      {editingId === c.id ? (
+                        // --- Edit mode ---
+                        <div className={styles.editForm}>
+                          <StarPicker value={editRating} onChange={setEditRating} />
+                          <textarea
+                            value={editText}
+                            onChange={e => setEditText(e.target.value)}
+                            className={styles.reviewTextarea}
+                            maxLength={300}
+                            rows={3}
+                          />
+                          <div className={styles.reviewFormFooter}>
+                            <span className={styles.charCount}>{editText.length}/300</span>
+                            <div className={styles.editActions}>
+                              <button
+                                type="button"
+                                className={styles.cancelEditBtn}
+                                onClick={handleCancelEdit}
+                                disabled={editSubmitting}
+                              >Скасувати</button>
+                              <button
+                                type="button"
+                                className={styles.reviewSubmitBtn}
+                                onClick={() => handleSaveEdit(c.id)}
+                                disabled={editSubmitting}
+                              >{editSubmitting ? 'Збереження...' : 'Зберегти'}</button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      // --- View mode ---
-                      <>
-                        <div className={styles.commentHeader}>
-                          <div className={styles.commentAvatar}>
-                            {c.userId?.[0]?.toUpperCase() || 'А'}
-                          </div>
-                          <div className={styles.commentMeta}>
-                            <div className={styles.commentStars}>
-                              {[1,2,3,4,5].map(n => (
-                                <span key={n} className={n <= c.rating ? styles.starFilled : styles.starEmpty}>★</span>
-                              ))}
+                      ) : (
+                        // --- View mode ---
+                        <>
+                          <div className={styles.commentHeader}>
+                            <div className={styles.commentAvatar}>
+                              {/* Баг 3: Виправлено — показуємо першу літеру імені */}
+                              {avatarLetter}
                             </div>
-                            <span className={styles.commentDate}>{formatDate(c.createdAt)}</span>
-                          </div>
-                          {user && (isOwner || isAdmin()) && (
-                            <div className={styles.commentActions}>
-                              <button
-                                className={styles.editComment}
-                                onClick={() => handleStartEdit(c)}
-                                title="Редагувати"
-                              >✎</button>
-                              <button
-                                className={styles.deleteComment}
-                                onClick={() => handleDeleteComment(c.id)}
-                                title="Видалити"
-                              >✕</button>
+                            <div className={styles.commentMeta}>
+                              <div className={styles.commentStars}>
+                                {[1,2,3,4,5].map(n => (
+                                  <span key={n} className={n <= c.rating ? styles.starFilled : styles.starEmpty}>★</span>
+                                ))}
+                              </div>
+                              <span className={styles.commentDate}>{formatDate(c.createdAt)}</span>
                             </div>
-                          )}
-                        </div>
-                        {c.text && <p className={styles.commentText}>{c.text}</p>}
-                      </>
-                    )}
-                  </div>
+                            {user && (isOwner || isAdmin()) && (
+                              <div className={styles.commentActions}>
+                                <button
+                                  className={styles.editComment}
+                                  onClick={() => handleStartEdit(c)}
+                                  title="Редагувати"
+                                >✎</button>
+                                <button
+                                  className={styles.deleteComment}
+                                  onClick={() => handleDeleteComment(c.id)}
+                                  title="Видалити"
+                                >✕</button>
+                              </div>
+                            )}
+                          </div>
+                          {c.text && <p className={styles.commentText}>{c.text}</p>}
+                        </>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -470,6 +474,7 @@ const Product = () => {
               {selectedVariant && (
                 <p className={styles.miniVariant}>{selectedVariant.volumeMl} мл</p>
               )}
+              {/* Баг 1: Ціна в мінікартці також оновлюється */}
               {selectedVariant && (
                 <p className={styles.miniPrice}>{formatPrice(selectedVariant.price)}</p>
               )}

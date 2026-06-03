@@ -34,6 +34,16 @@
   flex-shrink: 0;
 }
 
+/* Баг 3: Стиль для літери в аватарці */
+.avatarLetter {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--cream);
+  line-height: 1;
+  user-select: none;
+}
+
 .name {
   font-family: var(--font-display);
   font-size: 28px;
